@@ -30,7 +30,7 @@ nav ul {
 nav li {
     float: left;
     margin-left: 70px;
-    padding-top: 25px;
+    margin-top: 25px;
 }
 
 nav a {
@@ -42,4 +42,9 @@ nav a {
 
 nav a:hover{
     color: #FFFFFF;
+    float: right;
+}
+
+.login-button{
+
 }
