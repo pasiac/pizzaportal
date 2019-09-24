@@ -1,5 +1,5 @@
 {% load static %}
-<html>
+<html lang="en">
   <head>
   <link href="{% static "orders/styles.css" %}" rel="stylesheet" type="text/css"/>
       <title>{% block title %}{% endblock %}</title>
@@ -13,8 +13,8 @@
 
           <nav>
               <ul>
-                  <li><a href="#">Home</a></li>
-                  <li><a href="#">Menu</a></li>
+                  <li><a href="/">Home</a></li>
+                  <li><a href="/menu">Menu</a></li>
                   <li><a href="#">Directions</a></li>
                   <li><a href="#">Hours</a></li>
                   <li><a href="#">Sicilian vs. Regular</a></li>
@@ -30,7 +30,6 @@
           </nav>
       </div>
   </header>
-
       {% block body %}{% endblock %}
   </body>
 </html>

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}
+    Pizzernia-menu
+{% endblock %}
+{% block body %}
+    <h1>Menu</h1>
+    <h2>Subs</h2>
+    <ul class="subs-list">
+        {% for sub in subs %}
+            <li>{{ sub }}</li>
+        {% endfor %}
+    </ul>
+    <h2>Pastas</h2>
+    <ul class="pastas-list">
+        {% for pasta in pastas %}
+            <li>{{ pasta }}</li>
+        {% endfor %}
+    </ul>
+    <h2>Salads</h2>
+    <ul class="salads-list">
+        {% for salad in salads %}
+            <li>{{ salad }}</li>
+        {% endfor %}
+    </ul>
+    <h2>Dinner plates</h2>
+    <ul class="dinnerplates-list">
+        {% for plate in dinnerplates %}
+            <li>{{ plate }}</li>
+        {% endfor %}
+    </ul>
+{% endblock %}
