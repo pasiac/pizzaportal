@@ -99,11 +99,13 @@ class Item(models.Model):
 
     def get_add_to_cart_url(self):
         return reverse("orders:add-to-cart", kwargs={
-            'name': self.name
+            'slug': self.slug
         })
 
     def get_remove_from_cart_url(self):
-        pass
+        return reverse("orders:remove-from-cart", kwargs={
+            'slug': self.slug
+        })
 
 
 # Shopping cart
