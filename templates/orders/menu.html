@@ -4,28 +4,24 @@
 {% endblock %}
 {% block body %}
     <h1>Menu</h1>
-    <h2>Subs</h2>
-    <ul class="subs-list">
-        {% for sub in subs %}
-            <li>{{ sub }}</li>
+    <table>
+        <tr>
+            {% for item in object_list %}
+                <th><a href="#">{{ item.get_category_display }}</a></th>
+            {% endfor %}
+        </tr>
+        <tr>
+            <th>Name</th>
+            <th>Small</th>
+            <th>Large</th>
+        </tr>
+        {% for item in object_list %}
+            <tr>
+                <th>{{ item }}</th>
+                <th><a href="#"> {{ item.small_price }}</a></th>
+                <th><a href="#"> {{ item.large_price }}</a></th>
+                <th><a href="{{ item.get_add_to_cart_url }}">add to cart</a></th>
+            </tr>
         {% endfor %}
-    </ul>
-    <h2>Pastas</h2>
-    <ul class="pastas-list">
-        {% for pasta in pastas %}
-            <li>{{ pasta }}</li>
-        {% endfor %}
-    </ul>
-    <h2>Salads</h2>
-    <ul class="salads-list">
-        {% for salad in salads %}
-            <li>{{ salad }}</li>
-        {% endfor %}
-    </ul>
-    <h2>Dinner plates</h2>
-    <ul class="dinnerplates-list">
-        {% for plate in dinnerplates %}
-            <li>{{ plate }}</li>
-        {% endfor %}
-    </ul>
+    </table>
 {% endblock %}

@@ -1,8 +1,11 @@
 from django.urls import path
 
-from . import views
+from .views import index, MenuView, add_to_cart
+
+app_name = "orders"
 
 urlpatterns = [
-    path("", views.index, name='home'),
-    path("menu", views.menu, name='menu'),
+    path("", index, name='home'),
+    path("menu", MenuView.as_view(), name='menu'),
+    path("add-to-cart/<name>/", add_to_cart, name='add-to-cart')
 ]

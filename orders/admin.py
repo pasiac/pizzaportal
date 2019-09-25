@@ -3,9 +3,7 @@ from .models import *
 
 
 # Register your models here.
-admin.site.register(RegularPizza)
-admin.site.register(SicilianPizza)
-admin.site.register(Sub)
-admin.site.register(Salad)
-admin.site.register(DinnerPlatters)
-admin.site.register(Pasta)
+admin.site.register(Item)
+admin.site.register(OrderItem)
+admin.site.register(Order)
+
