@@ -128,8 +128,8 @@ STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'static')
 STATIC_URL = '/static/'
 
 # Logging in
-LOGIN_REDIRECT_URL = 'home'
-LOGOUT_REDIRECT_URL = 'home'
+LOGIN_REDIRECT_URL = 'orders:home'
+LOGOUT_REDIRECT_URL = 'orders:home'
 
 # Resetting password
 EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
