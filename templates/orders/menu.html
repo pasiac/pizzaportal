@@ -21,7 +21,6 @@
                 <th><a href="#"> {{ item.small_price }}</a></th>
                 <th><a href="#"> {{ item.large_price }}</a></th>
                 <th><a href="{{ item.get_add_to_cart_url }}">add to cart</a></th>
-                <th><a href="{{ item.get_remove_from_cart_url }}">remove from cart</a></th>
             </tr>
         {% endfor %}
     </table>

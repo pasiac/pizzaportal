@@ -94,9 +94,6 @@ class Item(models.Model):
     def __str__(self):
         return self.name
 
-    def get_absolute_url(self):
-        pass
-
     def get_add_to_cart_url(self):
         return reverse("orders:add-to-cart", kwargs={
             'slug': self.slug

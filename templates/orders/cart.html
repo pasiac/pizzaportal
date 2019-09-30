@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}
+    Pizzernia
+{% endblock %}
+{% block body %}
+    {% for order in order.all %}
+        <h1>{{ order }} cart</h1>
+        {% for item in order.items.all %}
+            {{ item }} <a href="{{ item.item.get_remove_from_cart_url }}">remove from cart</a>
+        {% endfor %}
+    {% endfor %}
+{% endblock %}

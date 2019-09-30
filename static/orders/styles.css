@@ -1,10 +1,11 @@
 .container {
-    width: 80%;
+    width: 100%;
     marign: 0 auto;
 }
 
 header {
     background: #55d6aa;
+
 }
 
 header::after {
@@ -14,37 +15,42 @@ header::after {
 }
 .logo{
     float: left;
-    padding: 10px 0;
+    padding: 0 0;
 }
 
 nav {
-    float: right;
-}
 
-nav ul {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-nav li {
-    float: left;
-    margin-left: 70px;
-    margin-top: 25px;
+    display: flex;
+    justify-content: space-around;
 }
 
 nav a {
+    padding: 0;
+    margin: 15px 0 0 70px;
     color: #444;
     text-decoration: none;
     text-transform: uppercase;
     font-size: 14px;
 }
 
+@media (max-width: 600px){
+    nav a {
+        padding: 0;
+        margin: 15px 0 0 20px;
+        color: #444;
+        text-decoration: none;
+        text-transform: uppercase;
+    }
+}
+
+
 nav a:hover{
     color: #FFFFFF;
     float: right;
 }
 
-.login-button{
+.logging-in{
+    display: flex;
+    justify-content: space-around;
 
 }
