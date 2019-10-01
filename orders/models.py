@@ -101,7 +101,14 @@ class Item(models.Model):
 
     def get_remove_from_cart_url(self):
         return reverse("orders:remove-from-cart", kwargs={
-            'slug': self.slug
+            'slug': self.slug,
+            'delete': True
+        })
+
+    def get_decrease_quantity_url(self):
+        return reverse("orders:remove-from-cart", kwargs={
+            'slug': self.slug,
+            'delete': False
         })
 
 

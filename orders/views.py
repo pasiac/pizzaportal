@@ -54,8 +54,12 @@ def add_to_cart(request, slug):
     return redirect('orders:cart')
 
 
-# It will completely delete item from cart
-def remove_from_cart(request, slug):
+# If delete == True it will completely delete item from cart
+# else it will decrease quantity or delete if quantity will be 0
+# TODO:
+# I dont know why it doesnt delete order_item entry when orders
+# quantity equal 0, but if delete equal True it does with same code used
+def remove_from_cart(request, slug, delete):
     item = get_object_or_404(Item, slug=slug)
     # Get users orders
     order_qs = Order.objects.filter(
@@ -71,12 +75,21 @@ def remove_from_cart(request, slug):
                 user=request.user,
                 ordered=False
             )[0]
-            for item in order.items.all():
-                if item == order_item:
-                    item.delete()
-            messages.info(request, "This item was removed from your cart.")
+            if delete == 'True':
+                order.items.remove(order_item)
+                order_item.delete()
+                messages.info(request, "This item was removed from your cart.")
+            else:
+                if order_item.quantity > 1:
+                    order_item.quantity -= 1
+                    messages.info(request, "Quantity updated.")
+                else:
+                    order.items.remove(order_item)
+                    order_item.delete()
+                    messages.info(request, "This item was removed from your cart.")
+            order_item.save()
             order.save()
-            return redirect("orders:home")
+            return redirect("orders:cart")
         else:
             # return orders:menu
             messages.info(request, "This item was not in your cart")
@@ -85,60 +98,3 @@ def remove_from_cart(request, slug):
         messages.info(request, "You do not have an active order")
         return redirect("orders:menu")
 
-
-# This will decrease quantity of selected item
-# Probably I should create function to get order and ordered_item
-# to avoid code duplication
-def decrease_quantity(request, slug):
-    item = get_object_or_404(Item, slug=slug)
-    # Get users orders
-    order_qs = Order.objects.filter(
-        user=request.user,
-        ordered=False
-    )
-    if order_qs.exists():
-        # Get user cart
-        order = order_qs[0]
-        if order.items.filter(item__slug=item.slug).exists():
-            order_item = OrderItem.objects.filter(
-                item=item,
-                user=request.user,
-                ordered=False
-            )[0]
-            for item in order.items.all():
-                if item == order_item:
-                    item.quantity -= 1
-            messages.info(request, "Quantity updated.")
-            order.save()
-            return redirect("orders:cart")
-    else:
-        messages.info(request, "You dont have an active order")
-        return redirect("orders:menu")
-
-
-# Its increase quantity also have to fix code duplication
-def increase_quantity(request, slug):
-    item = get_object_or_404(Item, slug=slug)
-    # Get users orders
-    order_qs = Order.objects.filter(
-        user=request.user,
-        ordered=False
-    )
-    if order_qs.exists():
-        # Get user cart
-        order = order_qs[0]
-        if order.items.filter(item__slug=item.slug).exists():
-            order_item = OrderItem.objects.filter(
-                item=item,
-                user=request.user,
-                ordered=False
-            )[0]
-            for item in order.items.all():
-                if item == order_item:
-                    item.quantity += 1
-            messages.info(request, "Quantity updated")
-            order.save()
-            return redirect("orders:cart")
-    else:
-        messages.info(request, "You do not have an active order")
-        return redirect("orders:menu")
