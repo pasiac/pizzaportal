@@ -4,9 +4,13 @@
 {% endblock %}
 {% block body %}
     {% for order in order.all %}
-        <h1>{{ order }} cart</h1>
-        {% for item in order.items.all %}
-            {{ item }} <a href="{{ item.item.get_remove_from_cart_url }}">remove from cart</a>
-        {% endfor %}
+        <h1>{{ order }}'s cart</h1>
+        {% if order.items.all %}
+            {% for item in order.items.all %}
+                {{ item }} <a href="{{ item.item.get_remove_from_cart_url }}">remove from cart</a>
+            {% endfor %}
+        {% else %}
+            <h3>is empty</h3>
+        {% endif %}
     {% endfor %}
 {% endblock %}
