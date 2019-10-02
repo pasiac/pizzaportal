@@ -99,6 +99,7 @@ class Item(models.Model):
             'slug': self.slug
         })
 
+    # TODO: Get to know is it safe to pass such params this way
     def get_remove_from_cart_url(self):
         return reverse("orders:remove-from-cart", kwargs={
             'slug': self.slug,

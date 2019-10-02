@@ -3,6 +3,8 @@
     Pizzernia-menu
 {% endblock %}
 {% block body %}
+    {% load static %}
+    <script src="{% static 'orders/cart.js' %}"></script>
     <h1>Menu</h1>
     <table>
         <tr>
@@ -18,9 +20,16 @@
         {% for item in object_list %}
             <tr>
                 <th>{{ item }}</th>
-                <th><a href="#"> {{ item.small_price }}</a></th>
-                <th><a href="#"> {{ item.large_price }}</a></th>
-                <th><a href="{{ item.get_add_to_cart_url }}">add to cart</a></th>
+                <th>{{ item.small_price }}</th>
+                <th>{{ item.large_price }}</th>
+                <th>
+{#                    I am trying to replace this form with pop up window where user can choose #}
+{#                    size of item and get addons/toppings if exists for this kind of product #}
+                    <button onclick="itemDetails()">order</button>
+                    <form action="{{ item.get_add_to_cart_url }}">
+                        <input type="submit" value="add to cart" />
+                    </form>
+                </th>
             </tr>
         {% endfor %}
     </table>

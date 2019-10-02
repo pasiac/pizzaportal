@@ -98,3 +98,7 @@ def remove_from_cart(request, slug, delete):
         messages.info(request, "You do not have an active order")
         return redirect("orders:menu")
 
+
+def item_details(request):
+    return render(request, 'orders/itemDetails.html')
+
