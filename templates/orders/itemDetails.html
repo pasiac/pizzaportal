@@ -7,6 +7,9 @@
 </head>
 
 <body>
-
+    <form method="post">{% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Add to cart">
+    </form>
 </body>
 </html>

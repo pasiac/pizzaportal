@@ -4,6 +4,7 @@ from django.views.generic import ListView
 from django.contrib import messages
 
 from .models import *
+from .forms import ItemDetailsForm
 
 
 # Create your views here.
@@ -24,11 +25,6 @@ def cart(request):
     return render(request, 'orders/cart.html', context)
 
 
-# It would fix code duplication
-def get_order(request, slug):
-    pass
-
-
 # If add to cart button is clicked it add item to cart
 # or if it is already in cart it increase its quantity
 def add_to_cart(request, slug):
@@ -39,7 +35,6 @@ def add_to_cart(request, slug):
     order_qs = Order.objects.filter(user=request.user, ordered=False)
     if order_qs.exists():
         order = order_qs[0]
-        print(order)
         if order.items.filter(item__slug=item.slug).exists():
             order_item.quantity += 1
             order_item.save()
@@ -99,6 +94,16 @@ def remove_from_cart(request, slug, delete):
         return redirect("orders:menu")
 
 
-def item_details(request):
-    return render(request, 'orders/itemDetails.html')
+# Choosing size and addons to item
+def item_details(request, slug):
+    form = ItemDetailsForm(request.POST or None)
+    if form.is_valid():
+        form = ItemDetailsForm(request.POST or None)
+        form.save()
+    item = get_object_or_404(Item, slug=slug)
+    context = {
+        'form': form,
+        'item': item
+    }
+    return render(request, 'orders/itemDetails.html', context)
 

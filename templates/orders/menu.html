@@ -17,20 +17,20 @@
             <th>Small</th>
             <th>Large</th>
         </tr>
-        {% for item in object_list %}
-            <tr>
-                <th>{{ item }}</th>
-                <th>{{ item.small_price }}</th>
-                <th>{{ item.large_price }}</th>
-                <th>
-{#                    I am trying to replace this form with pop up window where user can choose #}
-{#                    size of item and get addons/toppings if exists for this kind of product #}
-                    <button onclick="itemDetails()">order</button>
-                    <form action="{{ item.get_add_to_cart_url }}">
-                        <input type="submit" value="add to cart" />
-                    </form>
-                </th>
-            </tr>
+
+
+                {% for item in object_list %}
+{#                    raw html form with hidden value#}
+                    <form action="{% url 'orders:item_details' item.slug %}" method="post">
+                    {% csrf_token %}
+                    <tr>
+                        <th>{{ item }}</th>
+                        <th>{{ item.small_price }}</th>
+                        <th>{{ item.large_price }}</th>
+                        <input type="hidden" value="{{ item.slug }}">
+                        <th><input type="submit" value="Order"></th>
+                    </tr>
+            </form>
         {% endfor %}
     </table>
 {% endblock %}

@@ -7,7 +7,7 @@
         <h1>{{ order }}'s cart</h1>
         {% if order.items.all %}
             {% for item in order.items.all %}
-                {{ item }} <a href="{{ item.item.get_remove_from_cart_url }}">remove from cart</a>
+               <p class="name"> {{ item }} </p><a href="{{ item.item.get_remove_from_cart_url }}">remove from cart</a>
                 <a href="{{ item.item.get_decrease_quantity_url }}">  minus</a>
                 <a href="{{ item.item.get_add_to_cart_url }}">  plus</a>
                 <br>
