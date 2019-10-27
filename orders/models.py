@@ -12,7 +12,7 @@ CATEGORY_CHOICES = (
 )
 
 ADDON_CHOICES = (
-    ("Peperoni", "Peperoni"), ("None", "None"), ("Sausage", "Sausage"), ("Mushrooms", "Mushrooms"),
+    ("Peperoni", "Peperoni"), ("Sausage", "Sausage"), ("Mushrooms", "Mushrooms"),
     ("Onions", "Onions"),
     ("Canadian Bacon", "Canadian Bacon"), ("Pineapple", "Pineapple"), ("Eggplant", "Eggplant"),
     ("Tomato & Basil", "Tomato & Basil"), ("Green Peppers", "Green Peppers"), ("Hamburger", "Hamburger"),
@@ -32,36 +32,42 @@ class Item(models.Model):
     def __str__(self):
         return self.name
 
-    def get_add_to_cart_url(self):
-        return reverse("orders:item_details", kwargs={
-            'slug': self.slug
-        })
+    # def get_add_to_cart_url(self):
+    #     return reverse("orders:item_details", kwargs={
+    #         'slug': self.slug
+    #     })
 
-    # TODO: Get to know is it safe to pass such params this way
-    def get_remove_from_cart_url(self):
-        return reverse("orders:remove-from-cart", kwargs={
-            'slug': self.slug,
-            'delete': True
-        })
 
-    def get_decrease_quantity_url(self):
-        return reverse("orders:remove-from-cart", kwargs={
-            'slug': self.slug,
-            'delete': False
-        })
 
 
 # Shopping cart
 class OrderItem(models.Model):
+    id = models.AutoField(primary_key=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE)
     ordered = models.BooleanField(default=False)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
-    quantity = models.IntegerField(default=1)
+    quantity = models.PositiveSmallIntegerField()
     size = models.CharField(max_length=16, choices=(('S', 'Small'), ('L', 'Large')), default='S')
-    addon1 = models.CharField(max_length=32, choices=ADDON_CHOICES, default='None')
-    addon2 = models.CharField(max_length=32, choices=ADDON_CHOICES, default='None')
-    addon3 = models.CharField(max_length=32, choices=ADDON_CHOICES, default='None')
+    addon1 = models.CharField(max_length=32, choices=ADDON_CHOICES, null=True, blank=True)
+    addon2 = models.CharField(max_length=32, choices=ADDON_CHOICES, null=True, blank=True)
+    addon3 = models.CharField(max_length=32, choices=ADDON_CHOICES, null=True, blank=True)
+
+    # TODO: Get to know is it safe to pass such params this way
+    def get_remove_from_cart_url(self):
+        return reverse("orders:remove-from-cart", kwargs={
+            'ajdi': self.id
+        })
+
+    def get_decrease_quantity_url(self):
+        return reverse("orders:decrease-quantity", kwargs={
+            'ajdi': self.id
+        })
+
+    def get_increase_quantity_url(self):
+        return reverse("orders:increase-quantity", kwargs={
+            'ajdi': self.id
+        })
 
     def __str__(self):
         str = f'{self.quantity} {self.size} {self.item}'
