@@ -33,7 +33,7 @@ class Item(models.Model):
         return self.name
 
     def get_add_to_cart_url(self):
-        return reverse("orders:add-to-cart", kwargs={
+        return reverse("orders:item_details", kwargs={
             'slug': self.slug
         })
 
@@ -64,7 +64,16 @@ class OrderItem(models.Model):
     addon3 = models.CharField(max_length=32, choices=ADDON_CHOICES, default='None')
 
     def __str__(self):
-        return f'{self.quantity} of {self.item}'
+        str = f'{self.quantity} {self.size} {self.item}'
+        if self.addon1 != 'None' or self.addon2 != 'None' or self.addon3 != 'None':
+            str += ' with'
+        if self.addon1 != 'None':
+            str += f' {self.addon1}'
+        if self.addon2 != 'None':
+            str += f' {self.addon2}'
+        if self.addon3 != 'None':
+            str += f' {self.addon3}'
+        return str
 
 
 class Order(models.Model):

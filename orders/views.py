@@ -27,21 +27,24 @@ def cart(request):
 
 # If add to cart button is clicked it add item to cart
 # or if it is already in cart it increase its quantity
-def add_to_cart(request, slug):
-    item = get_object_or_404(Item, slug=slug)
+def add_to_cart(request, arg):
+    print(arg)
     # get_or_create returns tuple returns object and boolean true if created
-    order_item, created = OrderItem.objects.get_or_create(
-        item=item, user=request.user, ordered=False)
-    order_qs = Order.objects.filter(user=request.user, ordered=False)
+    order_item, created = OrderItem.objects.get_or_create(arg)
+    print(order_item)
+    # if not created:
+    #     order_item.quantity += 1
+    order_qs = Order.objects.filter(user=request.user)
+    print(order_qs)
     if order_qs.exists():
         order = order_qs[0]
-        if order.items.filter(item__slug=item.slug).exists():
-            order_item.quantity += 1
-            order_item.save()
-            messages.info(request, "This item quantity was updated")
-        else:
-            order.items.add(order_item)
-            messages.info(request, "Item added to cart")
+        # if order.items.filter(item__slug=item.slug).exists():
+        #     order_item.quantity += 1
+        #     order_item.save()
+        #     messages.info(request, "This item quantity was updated")
+        # else:
+        order.items.add(order_item)
+        messages.info(request, "Item added to cart")
     else:
         order = Order.objects.create(user=request.user, ordered_date=timezone.now())
         order.items.add(order_item)
@@ -95,15 +98,22 @@ def remove_from_cart(request, slug, delete):
 
 
 # Choosing size and addons to item
+# Adding it to cart
 def item_details(request, slug):
     form = ItemDetailsForm(request.POST or None)
-    if form.is_valid():
-        form = ItemDetailsForm(request.POST or None)
-        form.save()
     item = get_object_or_404(Item, slug=slug)
+    item_info = {
+        'user': request.user,
+        'ordered': False,
+        'item': item
+    }
+    if form.is_valid():
+        item_info.update(form.cleaned_data)
+        print(item_info)
+        add_to_cart(arg=item_info, request=request)
+
     context = {
         'form': form,
         'item': item
     }
     return render(request, 'orders/itemDetails.html', context)
-
