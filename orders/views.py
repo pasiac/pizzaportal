@@ -1,85 +1,79 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.utils import timezone
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import ListView
-from django.contrib import messages
 
-from .models import *
 from .forms import ItemDetailsForm
+from .models import *
 
 
-# Create your views here.
 def index(request):
     return render(request, "orders/index.html")
 
 
-# Class view
 class MenuView(ListView):
     model = Item
-    template_name = 'orders/menu.html'
+    template_name = "orders/menu.html"
 
 
 def cart(request):
-    context = {
-        'order': Order.objects.filter(user=request.user, ordered=False)
-    }
-    return render(request, 'orders/cart.html', context)
+    context = {"order": UserCart.objects.filter(user=request.user, completed=False)}
+    return render(request, "orders/cart.html", context)
 
 
-# Choosing size and addons
 def item_details(request, slug):
-    form = ItemDetailsForm(request.POST or None)
     item = get_object_or_404(Item, slug=slug)
-    item_info = {
-        'user': request.user,
-        'ordered': False,
-        'item': item
-    }
+    form = ItemDetailsForm(request.POST or None)
     if form.is_valid():
-        item_info.update(form.cleaned_data)
-        return add_to_cart(arg=item_info, request=request)
-    context = {
-        'form': form,
-        'item': item
-    }
-    return render(request, 'orders/itemDetails.html', context)
+        form.cleaned_data.update({"item": item})
+        return add_to_cart(request=request, cart_item_data=form.cleaned_data)
+
+    return render(request, "orders/itemDetails.html", {"form": form, "item": item})
 
 
-def add_to_cart(request, arg):
-    order_item, created = OrderItem.objects.get_or_create(
-        user=arg['user'],
-        ordered=arg['ordered'],
-        item=arg['item'],
-        quantity=arg['quantity'],
-        size=arg['size'],
-        addon1=arg['addon1'],
-        addon2=arg['addon2'],
-        addon3=arg['addon3']
+def add_to_cart(request, cart_item_data):
+    item_to_add = __create_cart_item(cart_item_data)
+    user_cart, was_created = UserCart.objects.get_or_create(
+        user=request.user, completed=False,
     )
-    order_qs = Order.objects.filter(user=arg['user'])
-    if order_qs.exists():
-        order = order_qs[0]
-        if order.items.filter(id=order_item.id).exists():
-            order_item.quantity += 1
-            order_item.save()
-            messages.info(request, "This item quantity was updated")
-        else:
-            order.items.add(order_item)
-            messages.info(request, "Item added to cart")
+    if was_created:
+        user_cart.items.add(item_to_add)
     else:
-        order = Order.objects.create(user=request.user, ordered_date=timezone.now())
-        order.items.add(order_item)
-        messages.info(request, "Item added to cart")
-    return redirect('orders:cart')
+        cart_item = user_cart.items.filter(
+            item__name=item_to_add.item.name,
+            size=item_to_add.size,
+            topping=item_to_add.topping.first(),
+        ).first()
+        if cart_item:
+            cart_item.quantity = item_to_add.quantity
+        else:
+            user_cart.items.add(item_to_add)
+    user_cart.calculate_value()
+    return redirect("orders:cart")
+
+
+def __create_cart_item(cart_item_data: dict) -> CartItem:
+    # Będzie działać dla jednego dodatku
+    topping = cart_item_data.pop("topping")[0]
+    cart_item = CartItem.objects.filter(
+        item=cart_item_data["item"], size=cart_item_data["size"], topping=topping
+    ).first()
+
+    if not cart_item:
+        cart_item = CartItem.objects.create(**cart_item_data)
+        cart_item.topping.add(topping)
+    else:
+        cart_item.quantity += cart_item_data["quantity"]
+    cart_item.save()
+    return cart_item
 
 
 def remove_from_cart(request, ajdi):
-    order_qs = Order.objects.filter(user=request.user)
+    order_qs = UserCart.objects.filter(user=request.user)
     if order_qs.exists():
-        order = Order.objects.filter(user=request.user, ordered=False)[0]
+        order = UserCart.objects.filter(user=request.user, completed=False)[0]
         items = order.items.filter(id=ajdi)
         if items.exists():
             order.items.remove(items.first())
-    return redirect('orders:cart')
+    return redirect("orders:cart")
 
 
 def decrease_quantity(request, ajdi):
@@ -87,7 +81,7 @@ def decrease_quantity(request, ajdi):
     if item:
         item.quantity -= 1
         item.save()
-    return redirect('orders:cart')
+    return redirect("orders:cart")
 
 
 def increase_quantity(request, ajdi):
@@ -95,12 +89,4 @@ def increase_quantity(request, ajdi):
     if item:
         item.quantity += 1
         item.save()
-    return redirect('orders:cart')
-
-
-def get_item(user, item_id):
-    order_qs = Order.objects.filter(user=user, ordered=False)
-    if order_qs.exists():
-        item = order_qs.first().items.filter(id=item_id).first()
-        return item
-    return None
+    return redirect("orders:cart")

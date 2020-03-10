@@ -1,98 +1,85 @@
+from django.conf.global_settings import AUTH_USER_MODEL
 from django.db import models
-from django.conf import settings
+from django.db.models import ManyToManyField
 from django.urls import reverse
 
-CATEGORY_CHOICES = (
-    ("S", "Salad"),
-    ("SU", "Subs"),
-    ("SP", "Sicilian Pizza"),
-    ("RP", "Regular Pizza"),
-    ("DP", "Dinner Plate"),
-    ("P", "Pasta")
-)
 
-ADDON_CHOICES = (
-    ("Peperoni", "Peperoni"), ("Sausage", "Sausage"), ("Mushrooms", "Mushrooms"),
-    ("Onions", "Onions"),
-    ("Canadian Bacon", "Canadian Bacon"), ("Pineapple", "Pineapple"), ("Eggplant", "Eggplant"),
-    ("Tomato & Basil", "Tomato & Basil"), ("Green Peppers", "Green Peppers"), ("Hamburger", "Hamburger"),
-    ("Spinach", "Spinach"), ("Zucchini", "Zucchini"), ("Ham", "Ham"), ("Fresh Garlic", "Fresh Garlic"),
-    ("Artichoke", "Artichoke"), ("Buffalo Chicken", "Buffalo Chicken"), ("Barbecue Chicken", "Barbecue Chicken"),
-    ("Anchovies", "Anchovies"), ("Black Olives", "Black Olives")
-)
+class UserCart(models.Model):
+    user = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE)
+    items = ManyToManyField("CartItem")
+    placed_date = models.DateTimeField(auto_now_add=True)
+    value = models.DecimalField(default=0, max_digits=5, decimal_places=2)
+    completed = models.BooleanField(default=False)
+
+    def __str__(self):
+        return str(self.user)
+
+    def calculate_value(self):
+        # Narazie zeruje potem dorobie
+        self.value = 0
+        for item in self.items.all():
+            if item.size == "Small":
+                self.value += item.item.small_price * item.quantity
+            else:
+                self.value += item.item.large_price * item.quantity
+            for topping in item.topping.all():
+                self.value += topping.price
+        self.save()
+
+
+class CartItem(models.Model):
+    item = models.ForeignKey("Item", on_delete=models.CASCADE)
+    quantity = models.IntegerField(default=1)
+    size = models.CharField(
+        max_length=8, choices=[("S", "Small"), ("L", "Large")], default="Small"
+    )
+    topping = models.ManyToManyField("Topping")
+
+    # TODO: Get to know is it safe to pass such params this way
+    def get_remove_from_cart_url(self):
+        return reverse("orders:remove-from-cart", kwargs={"ajdi": self.id})
+
+    def get_decrease_quantity_url(self):
+        return reverse("orders:decrease-quantity", kwargs={"ajdi": self.id})
+
+    def get_increase_quantity_url(self):
+        return reverse("orders:increase-quantity", kwargs={"ajdi": self.id})
+
+    def __str__(self):
+        return f"{self.item.name}  sztuk: {self.quantity}  wielkosci: {self.size} dodatek: {self.topping.first()}"
 
 
 class Item(models.Model):
-    name = models.CharField(max_length=32)
+    name = models.CharField(max_length=20)
     small_price = models.FloatField()
     large_price = models.FloatField(null=True, blank=True)
-    category = models.CharField(choices=CATEGORY_CHOICES, max_length=2)
-    slug = models.SlugField()
+    slug = models.SlugField(max_length=6)
+    category = models.ForeignKey("Category", on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
 
-    # def get_add_to_cart_url(self):
-    #     return reverse("orders:item_details", kwargs={
-    #         'slug': self.slug
-    #     })
 
-
-
-
-# Shopping cart
-class OrderItem(models.Model):
-    id = models.AutoField(primary_key=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL,
-                             on_delete=models.CASCADE)
-    ordered = models.BooleanField(default=False)
-    item = models.ForeignKey(Item, on_delete=models.CASCADE)
-    quantity = models.PositiveSmallIntegerField()
-    size = models.CharField(max_length=16, choices=(('S', 'Small'), ('L', 'Large')), default='S')
-    addon1 = models.CharField(max_length=32, choices=ADDON_CHOICES, null=True, blank=True)
-    addon2 = models.CharField(max_length=32, choices=ADDON_CHOICES, null=True, blank=True)
-    addon3 = models.CharField(max_length=32, choices=ADDON_CHOICES, null=True, blank=True)
-
-    # TODO: Get to know is it safe to pass such params this way
-    def get_remove_from_cart_url(self):
-        return reverse("orders:remove-from-cart", kwargs={
-            'ajdi': self.id
-        })
-
-    def get_decrease_quantity_url(self):
-        return reverse("orders:decrease-quantity", kwargs={
-            'ajdi': self.id
-        })
-
-    def get_increase_quantity_url(self):
-        return reverse("orders:increase-quantity", kwargs={
-            'ajdi': self.id
-        })
+class Category(models.Model):
+    name = models.CharField(max_length=20)
 
     def __str__(self):
-        str = f'{self.quantity} {self.size} {self.item}'
-        if self.addon1 != 'None' or self.addon2 != 'None' or self.addon3 != 'None':
-            str += ' with'
-        if self.addon1 != 'None':
-            str += f' {self.addon1}'
-        if self.addon2 != 'None':
-            str += f' {self.addon2}'
-        if self.addon3 != 'None':
-            str += f' {self.addon3}'
-        return str
+        return self.name
 
 
-class Order(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL,
-                             on_delete=models.CASCADE)
-    items = models.ManyToManyField(OrderItem)
-    start_date = models.DateTimeField(auto_now_add=True)
-    ordered_date = models.DateTimeField()
-    ordered = models.BooleanField(default=False)
+class Topping(models.Model):
+    name = models.CharField(max_length=20)
+    price = models.FloatField(default="2.00")
 
     def __str__(self):
-        return self.user.username
+        return self.name
 
 
+class Deliverymen(models.Model):
+    first_name = models.CharField(max_length=20)
+    second_name = models.CharField(max_length=20)
+    phone_number = models.CharField(max_length=10)
+    available = models.BooleanField(default=True)
 
-
+    def __str__(self):
+        return self.first_name + " " + self.second_name
